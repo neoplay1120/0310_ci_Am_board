@@ -1,91 +1,83 @@
 <?php
+defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Board extends CI_Controller {
 
-    public function __construct() {
-        parent::__construct();
-        $this->load->model('Board_model');
-    } 
+	public function __construct()  //생성자
+	{
+		parent::__construct();
+		$this->load->model('Board_model');  
+		$this->load->library('session');
 
-    public function index() {
-        $this->list();
-    }
+		if($this->session->userdata('email') == "")
+		{
+			header("Location: /index.php/member/login"); 
+		}
+	}
 
-    public function list() {
+	public function index()
+	{
+		$this->list();
+	} 
 
-        $search = $this->input->get('search');
-        
-        // 현재 페이지 가져오기
-        $now_page = $this->uri->segment(3);
-        // 전체글 개수 가져오기
-        $result_count = $this->Board_model->list_total($search);
-        // 리스트 값 가져오기
-        $result_list = $this->Board_model->list_select($now_page,$search);
-    
-    
-        // pagenation 시작
-        $this->load->library('pagination');
-        $config['base_url'] = 'http://127.0.0.1:9001/index.php/board/list';
-        $config['total_rows'] = $result_count->cnt;
-        $config['per_page'] = 10;
-        $config['num_links'] = 5;
-        $config['first_link'] = '처음으로';
-        $config['last_link'] = '끝으로';
-        $config['reuse_query_string'] = TRUE;
-        $this->pagination->initialize($config);
-        // pagenation 끝
-        
-        
-        $data['page_nation'] = $this->pagination->create_links();
-        $data['list'] = $result_list;
-        $data['search'] = $search;
-    
-        $this->load->view('board/list', $data);
-    }
+	public function list(){
 
-    public function input() {
-        $this->load->view('board/input');
-    }
+		//$search = $_GET['search'];
+		$search = $this->input->get('search');
+		$now_page =  $this->uri->segment(3); 
+		//전체글 개수 가져오기
+		$result_count = $this->Board_model->list_total($search); 
+		//리스트 값 가져오기
+		$result_list = $this->Board_model->list_select($now_page,$search);
 
-    public function update() {
+		// pagenation 시작
+		$this->load->library('pagination'); 
+		$config['base_url'] = 'http://127.0.0.1:9001/index.php/board/list';
+		$config['total_rows'] = $result_count->cnt;
+		$config['per_page'] = 10; 
+		$config['num_links'] = 3;
+		$config['full_tag_open'] = '<p>'; 
+		$config['full_tag_close'] = '</p>';
+		$config['first_link'] = '처음으로';
+		$config['last_link'] = '끝으로'; 
+		$config['reuse_query_string'] = true;
+		$this->pagination->initialize($config);
+		//pagenation 끝
+		
 
-        // id값 가져오기
-        $id = $this->input->get('id');
-    
-        // id를 가지고 모델의 view_select메서드를 호출하여 기존 값 불러오기
-        // 기존에 작성했던 코드의 재사용
-        $result = $this->Board_model->view_select($id);
-    
-        // 쿼리 수행 결과값을 배열에 저장하고 뷰에 전달하며 뷰 호출
-        $data['result'] = $result;
-        $this->load->view('board/update', $data);
-    }
+		$data['page_nation'] =  $this->pagination->create_links();
+		$data['list'] = $result_list; 
+		$data['search'] = $search;
 
-    public function view() {
+		$this->load->view('board/list',$data); 
+	}
 
-        // id값 가져오기
-        $id = $this->input->get('id');
-    
-        // id값을 가지고 모델 호출
-        $result = $this->Board_model->view_select($id);
-        
-        // 모델 메서드(쿼리 수행) 결과값을 뷰에 전달하며 뷰 호출
-        $data['result'] = $result;
-        $this->load->view('board/view', $data);
-        $this->comment_list($id);
-        
-    }
+	public function view(){
+		
+		$id =  $this->input->get('id');
+		$result = $this->Board_model->view_select($id);
+		$data['result'] = $result;
 
-    private function comment_list($board_id) {
+		$this->load->view('board/view',$data);
+		$this->comment_list($id);
+	}
 
-        $data['result'] = $result = $this->Board_model->comment_list($board_id);
-        $data['board_id'] = $board_id;
-    
-        $this->load->view('comment/list', $data);
-    
-    }
+	public function input(){
+		$this->load->view('board/input');
+	}
 
+	public function update(){
+		$id = $this->input->get('id');
+		$result = $this->Board_model->view_select($id);
+		$data['result'] = $result;
+		
+		$this->load->view('board/update',$data);
+	}
 
+	private function comment_list($board_id)
+	{ 
+		$data['result'] = $this->Board_model->comment_list($board_id);
+		$data['board_id'] = $board_id;
+		$this->load->view("comment/list",$data);
+	}
 }
-
-?>

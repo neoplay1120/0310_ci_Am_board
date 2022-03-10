@@ -1,0 +1,11 @@
+<IfModule mod_rewrite.c> 
+
+     RewriteEngine onRewriteCond $1 !^(index\.php|db|uploads|favicon\.ico)RewriteRule ^(.*)$ ./index.php/$1 [L]
+
+</IfModule>
+
+<IfModule !mod_rewrite.c>   
+
+    ErrorDocument 404 /
+
+</IfModule>
